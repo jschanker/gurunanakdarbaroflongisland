@@ -3,7 +3,7 @@ import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
 // import NavDropdown from "react-bootstrap/NavDropdown";
 import Container from "react-bootstrap/Container";
-import logo from "../assets/logo.jpg";
+// import logo from "../assets/logo.jpg";
 import { Link } from "react-router-dom";
 
 export default function Navigation() {
@@ -20,7 +20,7 @@ export default function Navigation() {
         }
       >
         <Navbar.Brand href="/">
-          <img src={logo} alt="Logo" id="logo" />
+          {/*<img src={logo} alt="Logo" id="logo" />*/}
         </Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">
