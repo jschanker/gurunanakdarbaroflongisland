@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Clock,
   MapPin,
@@ -51,6 +51,37 @@ type ActiveTab = "home" | "schedule" | "seva" | "contact";
 
 export default function GurdwaraPrototype() {
   const [activeTab, setActiveTab] = useState<ActiveTab>("home");
+  const [videoUrl, setVideoUrl] = useState<string>("");
+  const [isLoadingVideo, setIsLoadingVideo] = useState<boolean>(true);
+
+  const FALLBACK_VIDEO_URL = "";
+  //"https://www.facebook.com/GuruNanakDarbarHicksville/videos/2865499213784580/";
+
+  useEffect(() => {
+    async function fetchLatestKirtanVideo() {
+      try {
+        const response = await fetch(
+          "https://raw.githubusercontent.com/jschanker/gurunanakdarbaroflongisland-data/refs/heads/main/most-recent-kirtan.txt",
+        );
+        if (!response.ok) throw new Error("Network response failed");
+
+        const data = await response.text();
+        setVideoUrl(data || FALLBACK_VIDEO_URL);
+      } catch (error) {
+        console.warn(
+          "Failed to fetch dynamic live video, using fallback asset:",
+          error,
+        );
+        setVideoUrl(FALLBACK_VIDEO_URL);
+      } finally {
+        setIsLoadingVideo(false);
+      }
+    }
+
+    fetchLatestKirtanVideo();
+  }, []);
+
+  const iframeSrc = `https://www.facebook.com/plugins/video.php?height=314&href=${encodeURIComponent(videoUrl)}&show_text=false&width=560&t=0`;
 
   // Avoids hydration mismatches in purely static frameworks
   const currentYear = new Date().getFullYear();
@@ -61,7 +92,8 @@ export default function GurdwaraPrototype() {
       <div className="bg-amber-600 text-white px-4 py-2 text-center text-sm font-medium flex items-center justify-center gap-2">
         <Shield size={16} aria-hidden="true" />
         <span>
-          UNOFFICIAL AI Generated Prototype of Web Site for Guru Nanak Darbar of Long Island
+          UNOFFICIAL AI Generated Prototype of Web Site for Guru Nanak Darbar of
+          Long Island
         </span>
       </div>
 
@@ -82,7 +114,10 @@ export default function GurdwaraPrototype() {
             </div>
           </div>
 
-          <nav className="flex gap-1 bg-slate-100 p-1 rounded-lg" aria-label="Main Navigation">
+          <nav
+            className="flex gap-1 bg-slate-100 p-1 rounded-lg"
+            aria-label="Main Navigation"
+          >
             {(["home", "schedule", "seva", "contact"] as const).map((tab) => (
               <button
                 key={tab}
@@ -102,7 +137,6 @@ export default function GurdwaraPrototype() {
 
       {/* Main Content Viewport */}
       <main className="max-w-6xl mx-auto px-4 py-8 focus:outline-none">
-        
         {/* Tab 1: Home/Overview */}
         {activeTab === "home" && (
           <div className="space-y-12 animate-fadeIn">
@@ -120,6 +154,29 @@ export default function GurdwaraPrototype() {
                   Join us for daily prayers, soulful Kirtan congregations, and
                   selfless community service (Seva).
                 </p>
+                <div className="w-full max-w-[560px] aspect-video rounded-xl overflow-hidden shadow-lg border border-slate-700/5 bg-slate-950 mt-4">
+                  {isLoadingVideo ? (
+                    /* Simple Pulse Loading Skeleton */
+                    <div className="w-full h-full flex flex-col items-center justify-center space-y-3 bg-slate-900 animate-pulse text-slate-500">
+                      <div className="w-8 h-8 rounded-full border-2 border-amber-500/30 border-t-amber-500 animate-spin" />
+                      <span className="text-xs font-mono tracking-wider">
+                        Syncing Live Congration...
+                      </span>
+                    </div>
+                  ) : (
+                    /* Rendered Dynamic IFrame */
+                    <iframe
+                      src={iframeSrc}
+                      width="100%"
+                      height="100%"
+                      title="Guru Nanak Darbar Latest Kirtan Diwan"
+                      style={{ border: "none" }}
+                      className="w-full h-full"
+                      allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+                      allowFullScreen
+                    ></iframe>
+                  )}
+                </div>
                 <div className="pt-4 flex flex-wrap gap-3">
                   <a
                     href="https://www.facebook.com/GuruNanakDarbarHicksville/"
@@ -138,40 +195,66 @@ export default function GurdwaraPrototype() {
                   </button>
                 </div>
               </div>
-              <div className="absolute right-0 bottom-0 top-0 w-1/3 opacity-10 bg-[radial-gradient(#f59e0b_1px,transparent_1px)] [background-size:16px_16px] hidden md:block" aria-hidden="true"></div>
+              <div
+                className="absolute right-0 bottom-0 top-0 w-1/3 opacity-10 bg-[radial-gradient(#f59e0b_1px,transparent_1px)] [background-size:16px_16px] hidden md:block"
+                aria-hidden="true"
+              ></div>
             </section>
 
             {/* Core Three Pillars Grid */}
-            <section className="grid md:grid-cols-3 gap-6" aria-label="Three Pillars of Sikhism">
+            <section
+              className="grid md:grid-cols-3 gap-6"
+              aria-label="Three Pillars of Sikhism"
+            >
               <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 space-y-3">
-                <div className="w-10 h-10 bg-amber-100 text-amber-700 rounded-lg flex items-center justify-center font-bold">1</div>
-                <h3 className="font-bold text-lg text-slate-900">Naam Simran</h3>
+                <div className="w-10 h-10 bg-amber-100 text-amber-700 rounded-lg flex items-center justify-center font-bold">
+                  1
+                </div>
+                <h3 className="font-bold text-lg text-slate-900">
+                  Naam Simran
+                </h3>
                 <p className="text-sm text-slate-600 leading-relaxed">
-                  Remembering the Divine Creator at all times to align our minds with inner peace and universal truth.
+                  Remembering the Divine Creator at all times to align our minds
+                  with inner peace and universal truth.
                 </p>
               </div>
               <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 space-y-3">
-                <div className="w-10 h-10 bg-amber-100 text-amber-700 rounded-lg flex items-center justify-center font-bold">2</div>
+                <div className="w-10 h-10 bg-amber-100 text-amber-700 rounded-lg flex items-center justify-center font-bold">
+                  2
+                </div>
                 <h3 className="font-bold text-lg text-slate-900">Kirat Karo</h3>
                 <p className="text-sm text-slate-600 leading-relaxed">
-                  Earning an honest livelihood through hard work, integrity, and truthful mental and physical efforts.
+                  Earning an honest livelihood through hard work, integrity, and
+                  truthful mental and physical efforts.
                 </p>
               </div>
               <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 space-y-3">
-                <div className="w-10 h-10 bg-amber-100 text-amber-700 rounded-lg flex items-center justify-center font-bold">3</div>
-                <h3 className="font-bold text-lg text-slate-900">Vand Chhako</h3>
+                <div className="w-10 h-10 bg-amber-100 text-amber-700 rounded-lg flex items-center justify-center font-bold">
+                  3
+                </div>
+                <h3 className="font-bold text-lg text-slate-900">
+                  Vand Chhako
+                </h3>
                 <p className="text-sm text-slate-600 leading-relaxed">
-                  Sharing what you have with the less fortunate, supporting the community, and eating together as one equal family.
+                  Sharing what you have with the less fortunate, supporting the
+                  community, and eating together as one equal family.
                 </p>
               </div>
             </section>
 
             {/* Overview Quick Reference Section */}
-            <section className="bg-white rounded-xl shadow-sm border border-slate-100 p-6" aria-label="Quick Reference Details">
+            <section
+              className="bg-white rounded-xl shadow-sm border border-slate-100 p-6"
+              aria-label="Quick Reference Details"
+            >
               <div className="flex justify-between items-center mb-6">
                 <div className="space-y-1">
-                  <h3 className="text-xl font-bold text-slate-900">Quick Reference</h3>
-                  <p className="text-xs text-slate-500">Regular daily opening hours and core info</p>
+                  <h3 className="text-xl font-bold text-slate-900">
+                    Quick Reference
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Regular daily opening hours and core info
+                  </p>
                 </div>
                 <button
                   onClick={() => setActiveTab("schedule")}
@@ -182,23 +265,39 @@ export default function GurdwaraPrototype() {
               </div>
               <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 text-sm">
                 <div className="flex items-start gap-3 p-3 bg-slate-50 rounded-lg">
-                  <Clock className="text-amber-600 shrink-0 mt-0.5" size={18} aria-hidden="true" />
+                  <Clock
+                    className="text-amber-600 shrink-0 mt-0.5"
+                    size={18}
+                    aria-hidden="true"
+                  />
                   <div>
                     <p className="font-semibold text-slate-900">Open Daily</p>
                     <p className="text-slate-600">5:30 AM - 10:30 PM</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3 p-3 bg-slate-50 rounded-lg">
-                  <MapPin className="text-amber-600 shrink-0 mt-0.5" size={18} aria-hidden="true" />
+                  <MapPin
+                    className="text-amber-600 shrink-0 mt-0.5"
+                    size={18}
+                    aria-hidden="true"
+                  />
                   <div>
                     <p className="font-semibold text-slate-900">Address</p>
-                    <p className="text-slate-600">11 N Broadway, Hicksville, NY</p>
+                    <p className="text-slate-600">
+                      11 N Broadway, Hicksville, NY
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3 p-3 bg-slate-50 rounded-lg">
-                  <Phone className="text-amber-600 shrink-0 mt-0.5" size={18} aria-hidden="true" />
+                  <Phone
+                    className="text-amber-600 shrink-0 mt-0.5"
+                    size={18}
+                    aria-hidden="true"
+                  />
                   <div>
-                    <p className="font-semibold text-slate-900">Phone Support</p>
+                    <p className="font-semibold text-slate-900">
+                      Phone Support
+                    </p>
                     <p className="text-slate-600">(516) 933-4878</p>
                   </div>
                 </div>
@@ -212,12 +311,18 @@ export default function GurdwaraPrototype() {
           <div className="grid md:grid-cols-3 gap-8 animate-fadeIn">
             <section className="md:col-span-2 bg-white p-6 rounded-xl shadow-sm border border-slate-100">
               <h3 className="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2">
-                <Clock className="text-amber-600" aria-hidden="true" /> Daily Nitnem & Darbar Sahib Timings
+                <Clock className="text-amber-600" aria-hidden="true" /> Daily
+                Nitnem & Darbar Sahib Timings
               </h3>
               <div className="divide-y divide-slate-100">
                 {DAILY_SCHEDULE.map((item, index) => (
-                  <div key={index} className="py-3.5 flex justify-between items-center text-sm">
-                    <span className="font-medium text-slate-800">{item.activity}</span>
+                  <div
+                    key={index}
+                    className="py-3.5 flex justify-between items-center text-sm"
+                  >
+                    <span className="font-medium text-slate-800">
+                      {item.activity}
+                    </span>
                     <span className="bg-amber-50 text-amber-800 px-3 py-1 rounded-md font-mono font-semibold">
                       {item.time}
                     </span>
@@ -228,16 +333,24 @@ export default function GurdwaraPrototype() {
 
             <section className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
               <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
-                <Calendar className="text-amber-600" aria-hidden="true" /> Regular Congregations
+                <Calendar className="text-amber-600" aria-hidden="true" />{" "}
+                Regular Congregations
               </h3>
               <div className="space-y-4">
                 {UPCOMING_EVENTS.map((event, index) => (
-                  <div key={index} className="border-l-4 border-amber-500 pl-4 space-y-1">
-                    <h4 className="font-bold text-slate-900 text-sm">{event.title}</h4>
+                  <div
+                    key={index}
+                    className="border-l-4 border-amber-500 pl-4 space-y-1"
+                  >
+                    <h4 className="font-bold text-slate-900 text-sm">
+                      {event.title}
+                    </h4>
                     <p className="text-xs font-semibold text-amber-700">
                       {event.date} | {event.time}
                     </p>
-                    <p className="text-xs text-slate-600 leading-relaxed">{event.desc}</p>
+                    <p className="text-xs text-slate-600 leading-relaxed">
+                      {event.desc}
+                    </p>
                   </div>
                 ))}
               </div>
@@ -250,20 +363,25 @@ export default function GurdwaraPrototype() {
           <section className="bg-white rounded-xl shadow-sm border border-slate-100 p-6 md:p-8 space-y-8 animate-fadeIn">
             <div className="max-w-2xl space-y-2">
               <h3 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-                <Heart className="text-rose-600" aria-hidden="true" /> Guru Ka Langar & Seva Contributions
+                <Heart className="text-rose-600" aria-hidden="true" /> Guru Ka
+                Langar & Seva Contributions
               </h3>
               <p className="text-slate-600 text-sm leading-relaxed">
-                The community kitchen (Langar) provides free, hot vegetarian meals daily to all visitors, 
-                without distinction of religion, caste, gender, economic status, or nationality.
+                The community kitchen (Langar) provides free, hot vegetarian
+                meals daily to all visitors, without distinction of religion,
+                caste, gender, economic status, or nationality.
               </p>
             </div>
 
             <div className="grid sm:grid-cols-2 gap-6">
               <div className="bg-slate-50 p-5 rounded-lg space-y-3 border border-slate-100">
-                <h4 className="font-bold text-slate-900 text-base">Langar Sponsorship</h4>
+                <h4 className="font-bold text-slate-900 text-base">
+                  Langar Sponsorship
+                </h4>
                 <p className="text-xs text-slate-600 leading-relaxed">
-                  Families can participate in the tradition by contributing ingredients, or donating 
-                  towards the logistical costs of running the kitchen for standard weekly Diwan schedules.
+                  Families can participate in the tradition by contributing
+                  ingredients, or donating towards the logistical costs of
+                  running the kitchen for standard weekly Diwan schedules.
                 </p>
                 <button
                   onClick={() => setActiveTab("contact")}
@@ -274,10 +392,13 @@ export default function GurdwaraPrototype() {
               </div>
 
               <div className="bg-slate-50 p-5 rounded-lg space-y-3 border border-slate-100">
-                <h4 className="font-bold text-slate-900 text-base">Physical Volunteer Seva</h4>
+                <h4 className="font-bold text-slate-900 text-base">
+                  Physical Volunteer Seva
+                </h4>
                 <p className="text-xs text-slate-600 leading-relaxed">
-                  Cleanliness, serving foods, or chopping ingredients alongside community kitchens are always open. 
-                  Feel free to join directly during typical morning or weekend hours.
+                  Cleanliness, serving foods, or chopping ingredients alongside
+                  community kitchens are always open. Feel free to join directly
+                  during typical morning or weekend hours.
                 </p>
                 <span className="inline-block text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-1 rounded select-none">
                   No Signup Required
@@ -288,14 +409,19 @@ export default function GurdwaraPrototype() {
             <div className="border-t border-slate-100 pt-6">
               <div className="bg-amber-50 rounded-xl p-4 border border-amber-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 text-sm">
                 <div className="space-y-1">
-                  <h4 className="font-bold text-amber-950">Structural Updates & Expansion Project</h4>
+                  <h4 className="font-bold text-amber-950">
+                    Structural Updates & Expansion Project
+                  </h4>
                   <p className="text-xs text-amber-900/80 max-w-xl">
-                    For verification of direct mail donations or explicit physical building expansion support, 
-                    checks can be sent to their verified operational framework mailing addresses.
+                    For verification of direct mail donations or explicit
+                    physical building expansion support, checks can be sent to
+                    their verified operational framework mailing addresses.
                   </p>
                 </div>
                 <div className="bg-white px-4 py-3 rounded-md border border-amber-200/60 shadow-sm font-mono text-xs text-slate-800 font-medium shrink-0">
-                  <p className="font-bold text-slate-950 mb-1">Checks Payable To:</p>
+                  <p className="font-bold text-slate-950 mb-1">
+                    Checks Payable To:
+                  </p>
                   <p>Guru Nanak Darbar of Long Island</p>
                   <p>P.O. Box 40,</p>
                   <p>Hicksville, NY 11802</p>
@@ -307,43 +433,75 @@ export default function GurdwaraPrototype() {
 
         {/* Tab 4: Contact Details */}
         {activeTab === "contact" && (
-          <section className="bg-white rounded-xl shadow-sm border border-slate-100 p-6 max-w-2xl mx-auto space-y-6 animate-fadeIn" aria-label="Contact Information">
+          <section
+            className="bg-white rounded-xl shadow-sm border border-slate-100 p-6 max-w-2xl mx-auto space-y-6 animate-fadeIn"
+            aria-label="Contact Information"
+          >
             <div className="space-y-1">
-              <h3 className="text-xl font-bold text-slate-900">Contact Information</h3>
-              <p className="text-xs text-slate-500">Verified institutional references across primary channels</p>
+              <h3 className="text-xl font-bold text-slate-900">
+                Contact Information
+              </h3>
+              <p className="text-xs text-slate-500">
+                Verified institutional references across primary channels
+              </p>
             </div>
 
             <div className="space-y-4 text-sm">
               <div className="flex items-center gap-4 p-3 bg-slate-50 rounded-lg">
-                <MapPin className="text-amber-600 select-none" size={20} aria-hidden="true" />
+                <MapPin
+                  className="text-amber-600 select-none"
+                  size={20}
+                  aria-hidden="true"
+                />
                 <div>
-                  <p className="font-semibold text-slate-900">Physical Address</p>
-                  <p className="text-slate-600">11 N Broadway, Hicksville, NY 11801</p>
+                  <p className="font-semibold text-slate-900">
+                    Physical Address
+                  </p>
+                  <p className="text-slate-600">
+                    11 N Broadway, Hicksville, NY 11801
+                  </p>
                 </div>
               </div>
 
               <div className="flex items-center gap-4 p-3 bg-slate-50 rounded-lg">
-                <Phone className="text-amber-600 select-none" size={20} aria-hidden="true" />
+                <Phone
+                  className="text-amber-600 select-none"
+                  size={20}
+                  aria-hidden="true"
+                />
                 <div>
-                  <p className="font-semibold text-slate-900">Primary Phone Line</p>
+                  <p className="font-semibold text-slate-900">
+                    Primary Phone Line
+                  </p>
                   <p className="text-slate-600">(516) 933-4878</p>
                 </div>
               </div>
 
               <div className="flex items-center gap-4 p-3 bg-slate-50 rounded-lg">
-                <Mail className="text-amber-600 select-none" size={20} aria-hidden="true" />
+                <Mail
+                  className="text-amber-600 select-none"
+                  size={20}
+                  aria-hidden="true"
+                />
                 <div>
-                  <p className="font-semibold text-slate-900">Official Contact Electronic Mail</p>
-                  <p className="text-slate-600 font-mono">info@gurunanakdarbaroflongisland.com</p>
+                  <p className="font-semibold text-slate-900">
+                    Official Contact Electronic Mail
+                  </p>
+                  <p className="text-slate-600 font-mono">
+                    info@gurunanakdarbaroflongisland.com
+                  </p>
                 </div>
               </div>
             </div>
 
             <div className="bg-slate-50 border border-slate-200 p-4 rounded-lg text-center space-y-2">
-              <p className="text-xs font-semibold text-slate-700">Need Immediate Announcements?</p>
+              <p className="text-xs font-semibold text-slate-700">
+                Need Immediate Announcements?
+              </p>
               <p className="text-xs text-slate-500 leading-relaxed">
-                The administrative committee posts regular short updates, schedule changes, and live streaming links 
-                directly onto their public group profile.
+                The administrative committee posts regular short updates,
+                schedule changes, and live streaming links directly onto their
+                public group profile.
               </p>
               <div className="pt-2">
                 <a
@@ -362,7 +520,10 @@ export default function GurdwaraPrototype() {
 
       {/* Footer Area */}
       <footer className="bg-slate-900 text-slate-400 text-center py-8 text-xs border-t border-slate-800 mt-20 space-y-2">
-        <p>&copy; {currentYear} Guru Nanak Darbar of Long Island. All Rights Reserved.</p>
+        <p>
+          &copy; {currentYear} Guru Nanak Darbar of Long Island. All Rights
+          Reserved.
+        </p>
       </footer>
     </div>
   );
